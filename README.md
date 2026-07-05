@@ -13,6 +13,7 @@ A simple asynchronous URL Shortener service that demonstrates REST API developme
 
 ## Project Structure
 
+```text
 url_shortener/
 ├── app.py
 ├── models.py
@@ -21,76 +22,151 @@ url_shortener/
 ├── init_db.py
 ├── requirements.txt
 └── README.md
+```
 
 ## Setup Instructions
 
 ### 1. Clone the repository
-git clone <your-repo-url>
+
+```bash
+git clone https://github.com/saiteja9676/async_url_shortener.git
 cd url_shortener
+```
 
-### 2. Create virtual environment
+
+### 2. Create a virtual environment
+
+```bash
 python -m venv venv
+```
+
+### 3. Activate the virtual environment
+
+**Windows**
+
+```bash
 venv\Scripts\activate
+```
 
-### 3. Install dependencies
+### 4. Install dependencies
+
+```bash
 pip install -r requirements.txt
+```
 
-### 4. Initialize database
+### 5. Initialize the database
+
+```bash
 python init_db.py
+```
 
-### 5. Start Redis server
+### 6. Start the Redis server
+
+```bash
 redis-server
+```
 
-### 6. Start Celery worker
+### 7. Start the Celery worker
+
+```bash
 celery -A tasks worker --loglevel=info --pool=solo
+```
 
-### 7. Start Flask app
+### 8. Start the Flask application
+
+```bash
 python app.py
+```
 
-## API Endpoints
+The API will be available at:
+
+```text
+http://127.0.0.1:5000
+```
+
+## Sample API Requests
 
 ### POST /shorten
-Accepts a URL and returns a short code. Validation happens asynchronously.
 
-Request Body:
-{"url": "https://google.com"}
+**Request**
 
-Response (202 ACCEPTED):
-{"id": 1, "short_code": "MfQlfE", "url": "https://google.com"}
+```bash
+curl -i -X POST http://127.0.0.1:5000/shorten \
+  -H "Content-Type: application/json" \
+  -d '{"url":"https://google.com"}'
+```
+
+**Response**
+
+```http
+HTTP/1.1 202 Accepted
+```
+
+```json
+{
+  "id": 1,
+  "short_code": "MfQlfE",
+  "url": "https://google.com"
+}
+```
 
 ---
 
 ### GET /url/<short_code>
-Retrieves URL information by short code.
 
-Response (200 OK):
-{"original_url": "https://google.com", "short_code": "MfQlfE", "status": "active"}
+**Request**
 
-Response (404 NOT FOUND):
-{"error": "Not found"}
-
-## Sample curl Commands
-
-### POST
-curl -i -X POST http://127.0.0.1:5000/shorten \
-  -H "Content-Type: application/json" \
-  -d '{"url": "https://google.com"}'
-
-### GET
+```bash
 curl -i http://127.0.0.1:5000/url/MfQlfE
+```
 
-### GET (invalid code)
-curl http://127.0.0.1:5000/url/invalid123
+**Response**
+
+```http
+HTTP/1.1 200 OK
+```
+
+```json
+{
+  "original_url": "https://google.com",
+  "short_code": "MfQlfE",
+  "status": "active"
+}
+```
+
+---
+
+### GET /url/<invalid_code>
+
+**Request**
+
+```bash
+curl -i http://127.0.0.1:5000/url/invalid123
+```
+
+**Response**
+
+```http
+HTTP/1.1 404 Not Found
+```
+
+```json
+{
+  "error": "Not found"
+}
+```
 
 ## How It Works
 
-1. Client sends POST /shorten with a URL
-2. Flask saves the URL to SQLite with status pending
-3. Task is pushed to Redis via Celery
-4. Flask returns 202 immediately without waiting
-5. Celery worker validates the URL in background
-6. Worker updates status to active or invalid in SQLite
-7. Client can check status via GET /url/<short_code>
+1. Client sends **POST /shorten** with a URL.
+2. Flask generates a unique short code.
+3. The URL is stored in SQLite with status **pending**.
+4. Flask sends a Celery task to Redis using `.delay()`.
+5. Flask immediately returns **HTTP 202 Accepted**.
+6. The Celery worker consumes the task from Redis.
+7. The worker validates the URL.
+8. SQLite is updated with status **active** or **invalid**.
+9. Clients can retrieve the current status using **GET /url/<short_code>**.
 
 ## Architecture
 
