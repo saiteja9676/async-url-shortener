@@ -62,9 +62,11 @@ python init_db.py
 
 ### 6. Start the Redis server
 
+Make sure Redis is installed and running on `localhost:6379`.
+
+**Windows:**
 ```bash
 redis-server
-```
 
 ### 7. Start the Celery worker
 
@@ -93,7 +95,7 @@ http://127.0.0.1:5000
 ```bash
 curl -i -X POST http://127.0.0.1:5000/shorten \
   -H "Content-Type: application/json" \
-  -d '{"url":"https://google.com"}'
+  -d '{"url":"https://www.youtube.com/watch?v=dQw4w9WgXcQ"}'
 ```
 
 **Response**
@@ -104,20 +106,20 @@ HTTP/1.1 202 Accepted
 
 ```json
 {
-  "id": 1,
-  "short_code": "MfQlfE",
-  "url": "https://google.com"
+  "id": 4,
+  "short_code": "z7QNBM",
+  "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
 }
 ```
 
 ---
 
-### GET /url/<short_code>
+### GET /url/z7QNBM
 
 **Request**
 
 ```bash
-curl -i http://127.0.0.1:5000/url/MfQlfE
+curl -i http://127.0.0.1:5000/url/z7QNBM
 ```
 
 **Response**
@@ -128,20 +130,20 @@ HTTP/1.1 200 OK
 
 ```json
 {
-  "original_url": "https://google.com",
-  "short_code": "MfQlfE",
+  "original_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+  "short_code": "z7QNBM",
   "status": "active"
 }
 ```
 
 ---
 
-### GET /url/<invalid_code>
+### GET /url/abc456
 
 **Request**
 
 ```bash
-curl -i http://127.0.0.1:5000/url/invalid123
+curl -i http://127.0.0.1:5000/url/abc456
 ```
 
 **Response**
@@ -192,7 +194,7 @@ HTTP/1.1 404 Not Found
       Redis (Message Broker)
                     │
                     ▼
-            Celery Worker
+             Celery Worker
                     │
               Validate URL
                     │

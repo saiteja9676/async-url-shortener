@@ -14,7 +14,8 @@ def generate_short_code():
 
 @app.route("/shorten", methods=["POST"])
 def shorten():
-    # validate incoming request data
+
+    # validate the incoming request data
     schema = URLSchema()
     errors = schema.validate(request.json)
     if errors:
@@ -31,7 +32,7 @@ def shorten():
         if not cursor.fetchone():
             break
 
-    # insert into DB with staus pending
+    # save URL with 'pending' status
     cursor.execute(
         "INSERT INTO urls (short_code, original_url, status) VALUES (?, ?, ?)",
         (short_code, url, "pending")
@@ -47,6 +48,8 @@ def shorten():
 
 @app.route("/url/<short_code>", methods=["GET"])
 def get_url(short_code):
+
+    # retrieve URL details
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute(
