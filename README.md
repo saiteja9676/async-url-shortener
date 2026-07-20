@@ -67,6 +67,7 @@ Make sure Redis is installed and running on `localhost:6379`.
 **Windows:**
 ```bash
 redis-server
+```
 
 ### 7. Start the Celery worker
 

@@ -11,7 +11,7 @@ def create_table():
     cursor = conn.cursor()
 
     #enable WAL mode for better concurrent access
-    cursor.execute("PRAGMA journal_model = WAL")
+    cursor.execute("PRAGMA journal_mode = WAL")
 
     # create urls table if it doesn't exist
     cursor.execute("""
